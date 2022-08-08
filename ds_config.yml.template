@@ -1,0 +1,37 @@
+tickers:
+  - btc|usdt
+  - eth|usdt
+  - ada|usdt
+  - xrp|usdt
+  - doge|usdt
+  - avax|usdt
+  - dot|usdt
+  - matic|usdt
+  - near|usdt
+  - ltc|usdt
+  - trx|usdt
+  - atom|usdt
+  - link|usdt
+  - bch|usdt
+  - uni|usdt
+  - xlm|usdt
+  - algo|usdt
+  - xmr|usdt
+  - etc|usdt
+  - hbar|usdt
+  - icp|usdt
+  - fil|usdt
+  - mana|usdt
+
+# Периодичность расчётов
+sleep_interval: 1
+
+# Минимальный процент расхождения цен между MIN и MAX 0.01 == 1%
+min_percent: 0.01
+
+logging:
+#  filename: /var/log/dash_app/money_maker_bot.log
+  format: "{asctime} {levelname:5} {name}: {message}"
+  level: DEBUG
+  loggers:
+    bot: DEBUG

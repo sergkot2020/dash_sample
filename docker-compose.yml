@@ -1,0 +1,33 @@
+version: "3.7"
+volumes:
+    pgdata:
+        driver: local
+services:
+  db:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - ./data_source/sql/install.sql:/docker-entrypoint-initdb.d/install.sql
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=dash_app
+      - POSTGRES_PASSWORD=dash_app
+      - POSTGRES_DB=dash_app
+      - POSTGRES_INITDB_ARGS="-E utf8"
+    shm_size: 8192MB
+    security_opt:
+      - seccomp:unconfined
+  dash:
+    depends_on:
+      - db
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: dash
+    volumes:
+      - /var/log/dash_app/:/var/log/dash_app
+    restart: always
+    security_opt:
+      - seccomp:unconfined
