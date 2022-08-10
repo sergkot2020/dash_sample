@@ -44,8 +44,6 @@ class App:
         self.last_update = {}
         self.slider_marks = None
         self.stop_stream = False
-        # TODO move to shared cache
-        self.interval_was_updated = None
         self.layout = lambda tickers: dbc.Container(
             [
                 dbc.Card(
@@ -79,7 +77,7 @@ class App:
                         Input(INTERVAL_ID, 'n_intervals'),
                         State(DROPDOWN_ID, 'value'),
                         Input(GRAPH_ID, 'relayoutData'),
-                        State(STORE_ID, 'data'),
+                        State(SLIDER_ID, 'value'),
                     ],
 
                 )
@@ -92,17 +90,20 @@ class App:
                 ),
 
             ),
-            (
-                self.change_slider,
-                (
-                    Output(STORE_ID, 'data'),
-                    Input(SLIDER_ID, 'value'),
-                )
-            )
+            # (
+            #     self.change_slider,
+            #     (
+            #         Output(STORE_ID, 'data'),
+            #         Input(SLIDER_ID, 'value'),
+            #     )
+            # )
         ]
 
-    def update_graph_scatter(self, n_interval, current_ticker, relayout_data, store_data):
-        is_stream = store_data and store_data.get('slider_state') == 1
+    def update_graph_scatter(self, n_interval, current_ticker, relayout_data, slider_value):
+        is_stream = slider_value == 1
+        logger.debug(f'n_interval     -> {n_interval}')
+        logger.debug(f'current_ticker -> {current_ticker}')
+        logger.debug(f'relayout_data  -> {relayout_data}')
 
         is_relayout_event = (
             relayout_data and (
@@ -115,9 +116,6 @@ class App:
             raise PreventUpdate
 
         if is_relayout_event and not is_stream:
-            raise PreventUpdate
-
-        if is_stream and self.interval_was_updated == n_interval:
             raise PreventUpdate
 
         start_x = end_x = start_y = end_y = None
@@ -152,11 +150,20 @@ class App:
 
         y, x = list(zip(*rowset))
 
+        if start_x == min(x) and end_x == max(x):
+            logger.debug('Double callback')
+            raise PreventUpdate
+
         if is_stream or not (start_x and end_x):
             start_x = min(x)
             end_x = max(x)
             start_y = min(y)
             end_y = max(y)
+
+        logger.info(f'start_x -> {start_x}')
+        logger.info(f'end_x   -> {end_x}')
+        logger.info(f'start_y -> {start_y}')
+        logger.info(f'end_y   -> {end_y}')
 
         data = plotly.graph_objs.Scatter(
             x=x,
@@ -164,13 +171,18 @@ class App:
             name='Scatter',
             mode='lines'
         )
-        self.interval_was_updated = n_interval
         return [
             {
                 'data': [data],
                 'layout': go.Layout(
-                    xaxis=dict(range=[start_x, end_x]),
-                    yaxis=dict(range=[start_y, end_y]),
+                    xaxis=dict(
+                        range=[start_x, end_x],
+                        # autorange=False,
+                    ),
+                    yaxis=dict(
+                        range=[start_y, end_y],
+                        # autorange=False,
+                    ),
                 )
             },
         ]
@@ -188,7 +200,7 @@ class App:
 
     @staticmethod
     def change_slider(slider_value):
-        print(f'Slider ON: {slider_value == SLIDER_ON}')
+        logging.info(f'Slider ON: {slider_value == SLIDER_ON}')
         return [{
             'slider_state': slider_value
         }]
