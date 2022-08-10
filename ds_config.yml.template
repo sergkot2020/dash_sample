@@ -1,36 +1,24 @@
-tickers:
-  - btc|usdt
-  - eth|usdt
-  - ada|usdt
-  - xrp|usdt
-  - doge|usdt
-  - avax|usdt
-  - dot|usdt
-  - matic|usdt
-  - near|usdt
-  - ltc|usdt
-  - trx|usdt
-  - atom|usdt
-  - link|usdt
-  - bch|usdt
-  - uni|usdt
-  - xlm|usdt
-  - algo|usdt
-  - xmr|usdt
-  - etc|usdt
-  - hbar|usdt
-  - icp|usdt
-  - fil|usdt
-  - mana|usdt
+ticker_range: [0, 99]
 
-# Периодичность расчётов
-sleep_interval: 1
+# seconds
+insert_interval: 1
 
-# Минимальный процент расхождения цен между MIN и MAX 0.01 == 1%
-min_percent: 0.01
+generate_historical_data: true
+# hours
+historical_timedelta: 10
+
+db_config:
+  db_pool_size: 10
+  schema: data_source
+  dbtype: pgsql
+  host: db
+  port: 5432
+  database: dash
+  user: dash
+  password: dash
 
 logging:
-#  filename: /var/log/dash_app/money_maker_bot.log
+  filename: /var/log/dash_app/data_server.log
   format: "{asctime} {levelname:5} {name}: {message}"
   level: DEBUG
   loggers:

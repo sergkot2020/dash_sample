@@ -30,7 +30,7 @@ def handle_sigusr1(signame):
     reopen_logs()
 
 
-def handle_asyncio_exception(loop, context):
+def handle_asyncio_exception(_, context):
     logger.error(
         'Asyncio error: %s, exception: %s',
         context['message'],

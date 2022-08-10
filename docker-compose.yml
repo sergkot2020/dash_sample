@@ -12,22 +12,36 @@ services:
       - ./data_source/sql/install.sql:/docker-entrypoint-initdb.d/install.sql
       - pgdata:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=dash_app
-      - POSTGRES_PASSWORD=dash_app
-      - POSTGRES_DB=dash_app
+      - POSTGRES_USER=dash
+      - POSTGRES_PASSWORD=dash
+      - POSTGRES_DB=dash
       - POSTGRES_INITDB_ARGS="-E utf8"
     shm_size: 8192MB
     security_opt:
       - seccomp:unconfined
-  dash:
+  ds_server:
     depends_on:
       - db
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./data_source/Dockerfile
+    image: ds_server
+    volumes:
+      - /Users/sergejnovozilov/PycharmProjects/dash_sample/logs/:/var/log/dash_app
+    restart: always
+    security_opt:
+      - seccomp:unconfined
+  dash:
+    depends_on:
+      - ds_server
+    ports:
+      - "8050:8050"
+    build:
+      context: .
+      dockerfile: ./dash_app/Dockerfile
     image: dash
     volumes:
-      - /var/log/dash_app/:/var/log/dash_app
+      - /Users/sergejnovozilov/PycharmProjects/dash_sample/logs/:/var/log/dash_app
     restart: always
     security_opt:
       - seccomp:unconfined

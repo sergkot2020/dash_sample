@@ -2,6 +2,7 @@ import logging
 from typing import List
 from time import monotonic
 from data_source.db.postgres import PostgresDB
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -75,15 +76,38 @@ from ticker
 
         return ticker_map
 
-    async def save_tick(self, data: list):
+    async def get_intervals(self, start: datetime, end: datetime):
+        return await self.pool.fetch(
+            '''\
+select date_trunc('second', dd):: timestamptz as ts
+from generate_series($1, $2, '1 second'::interval) dd
+''',
+            start,
+            end,
+        )
+
+    async def save_tick(
+            self,
+            data: list,
+            tab_name: str,
+            ts_constraint_start: datetime,
+            ts_constraint_end: datetime
+    ):
         async with self.pool.acquire() as conn:
             async with conn.transaction():
+                await conn.execute(
+                    f'''\
+create table if not exists {tab_name} partition of data_source.ticker_log_part
+for values from ('{ts_constraint_start:%Y-%m-%d %H:%M:%S}') TO ('{ts_constraint_end:%Y-%m-%d %H:%M:%S}');
+''',
+                )
                 await conn.execute(
                     '''\
 create temporary table if not exists  temp_ticker_log
 (
-    ticker_id integer not null,
-    price     numeric not null
+ticker_id integer not null,
+price     numeric not null,
+created   timestamptz not null
 )
 with (fillfactor=100, oids=false)
 on commit delete rows
@@ -94,14 +118,13 @@ on commit delete rows
                     records=data,
                 )
                 await conn.execute(
-                    '''\
-insert into ticker_log (ticker_id, price)
+                    f'''\
+insert into {tab_name} (ticker_id, price, created)
 select 
-    ticker_id,
-    price
+ticker_id,
+price,
+created
 from temp_ticker_log
 ''',
                 )
-
-
 

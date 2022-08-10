@@ -1,20 +1,19 @@
 # seconds
 update_interval: 1
+row_limit: 180
 
 db_config:
-  db_pool_size: 10
   schema: data_source
-  dbtype: pgsql
-  host: 127.0.0.1
+  host: db
   port: 5432
-  database: dash_app
-  user: dash_app
-  password: dash_app
+  database: dash
+  user: dash
+  password: dash
 
 
 logging:
-#  filename: /var/log/dash_app/dash_server.log
+  filename: /var/log/dash_app/dash_server.log
   format: "{asctime} {levelname:5} {name}: {message}"
   level: DEBUG
   loggers:
-    bot: DEBUG
+    app: DEBUG

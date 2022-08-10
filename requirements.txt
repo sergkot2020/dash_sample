@@ -1,0 +1,8 @@
+dash
+plotly
+PyYAML
+uvloop
+asyncpg
+pandas
+dash-bootstrap-components
+psycopg2-binary
